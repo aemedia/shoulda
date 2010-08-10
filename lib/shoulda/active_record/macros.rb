@@ -467,35 +467,44 @@ module ThoughtBot # :nodoc:
         #   should_have_one :god # unless hindu
         #
         def should_have_one(*associations)
-          dependent = get_options!(associations, :dependent)
+          through, dependent = get_options!(associations, :through, :dependent)
           klass = model_class
           associations.each do |association|
             name = "have one #{association}"
+            name += " through #{through}" if through
             name += " dependent => #{dependent}" if dependent
             should name do
               reflection = klass.reflect_on_association(association)
               assert reflection, "#{klass.name} does not have any relationship to #{association}"
               assert_equal :has_one, reflection.macro
 
-              associated_klass = (reflection.options[:class_name] || association.to_s.camelize).constantize
-
-              if reflection.options[:foreign_key]
-                fk = reflection.options[:foreign_key]
-              elsif reflection.options[:as]
-                fk = reflection.options[:as].to_s.foreign_key
-                fk_type = fk.gsub(/_id$/, '_type')
-                assert associated_klass.column_names.include?(fk_type),
-                       "#{associated_klass.name} does not have a #{fk_type} column."
-              else
-                fk = klass.name.foreign_key
+              if through
+                through_reflection = klass.reflect_on_association(through)
+                assert through_reflection, "#{klass.name} does not have any relationship to #{through}"
+                assert_equal(through, reflection.options[:through])
               end
-              assert associated_klass.column_names.include?(fk.to_s),
-                     "#{associated_klass.name} does not have a #{fk} foreign key."
 
               if dependent
                 assert_equal dependent.to_s,
                              reflection.options[:dependent].to_s,
                              "#{association} should have #{dependent} dependency"
+              end
+              
+              unless reflection.options[:through]
+                associated_klass = (reflection.options[:class_name] || association.to_s.camelize).constantize
+
+                if reflection.options[:foreign_key]
+                  fk = reflection.options[:foreign_key]
+                elsif reflection.options[:as]
+                  fk = reflection.options[:as].to_s.foreign_key
+                  fk_type = fk.gsub(/_id$/, '_type')
+                  assert associated_klass.column_names.include?(fk_type),
+                         "#{associated_klass.name} does not have a #{fk_type} column."
+                else
+                  fk = klass.name.foreign_key
+                end
+                assert associated_klass.column_names.include?(fk.to_s),
+                       "#{associated_klass.name} does not have a #{fk} foreign key."
               end
             end
           end

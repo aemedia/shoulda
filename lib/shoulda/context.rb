@@ -239,7 +239,7 @@ module Thoughtbot # :nodoc:
       end
 
       def create_test_from_should_hash(should)
-        test_name = ["test:", full_name, "should", "#{should[:name]}. "].flatten.join(' ').to_sym
+        test_name = test_name_for_should(should[:name])
 
         if test_unit_class.instance_methods.include?(test_name.to_s)
           warn "  * WARNING: '#{test_name}' is already defined"
@@ -256,6 +256,10 @@ module Thoughtbot # :nodoc:
             context.run_all_teardown_blocks(self)
           end
         end
+      end
+
+      def test_name_for_should(should_name)
+        ["test:", full_name, "should", "#{should_name}. "].flatten.join(' ').to_sym
       end
 
       def run_all_setup_blocks(binding)

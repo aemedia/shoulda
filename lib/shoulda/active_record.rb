@@ -1,6 +1,7 @@
 require 'shoulda'
 require 'shoulda/active_record/assertions'
 require 'shoulda/active_record/macros'
+require 'shoulda/active_record/transactional_context'
 
 module Test # :nodoc: all
   module Unit
