@@ -25,10 +25,10 @@ module ActionController #:nodoc: all
   end
 end
 
-if defined?(ActionController::TestCase)
-  class ActionController::TestCase
-    def subject
-      @controller
-    end
+require 'action_controller/test_case'
+class ActionController::TestCase
+  def subject
+    @controller
   end
 end
+
